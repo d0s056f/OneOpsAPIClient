@@ -253,7 +253,7 @@ public class Transition extends APIClient {
 	 * @return
 	 * @throws OneOpsClientAPIException
 	 */
-	public Deployment deploy(String environmentName, String comments) throws OneOpsClientAPIException {
+	public Deployment deploy(String environmentName, String[] includeComponents, String comments) throws OneOpsClientAPIException {
 		
 		RequestSpecification request = createRequest();
 		
@@ -269,7 +269,19 @@ public class Transition extends APIClient {
 			}
 			ResourceObject ro = new ResourceObject();
 			ro.setProperties(properties);
-			JSONObject jsonObject = JsonUtil.createJsonObject(ro , "cms_deployment");
+			JSONObject jsonObject = JsonUtil.createJsonObject(ro, "cms_deployment");
+
+			 StringBuilder sb = new StringBuilder();
+			 if(includeComponents != null && includeComponents.length > 0) {
+				 for (int i = 0; i < includeComponents.length; i++) {
+					 sb.append(includeComponents[i]);
+					 if(i < (includeComponents.length - 1)){
+						 sb.append(",");
+					 }
+				 }
+			 }
+			jsonObject.put("componentIds", sb.toString());
+
 			Response response = request.body(jsonObject.toString()).post(transitionEnvUri + environmentName + "/deployments/");
 			if(response == null) {
 				String msg = String.format("Failed to start deployment for environment %s due to null response" , environmentName);

@@ -14,6 +14,7 @@ public class OOInstance {
 	private String environment;
 	private String component;
 	private String comment;
+	private String[] componentIds;
 	private boolean gzipEnabled = true;
 	
 	public String getName() {
@@ -61,15 +62,13 @@ public class OOInstance {
 	public String getComponent() {
 		return component;
 	}
-	public void setComponent(String component) {
-		this.component = component;
-	}
-	public String getComment() {
-		return comment;
-	}
+	public void setComponent(String component) { this.component = component; }
+	public String getComment() { return comment; }
 	public void setComment(String comment) {
 		this.comment = comment;
-	}	
+	}
+	public String[] getComponentIds() { return componentIds; }
+	public void setComponentIds(String[] componentIds) { this.componentIds = componentIds; }
 	public boolean isGzipEnabled() {
 		return gzipEnabled;
 	}

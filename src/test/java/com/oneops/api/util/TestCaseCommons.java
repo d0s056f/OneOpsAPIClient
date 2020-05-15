@@ -158,7 +158,7 @@ public class TestCaseCommons {
 		Release bomRelease = transition.getBomRelease(envName);
 		if(bomRelease != null) {
 			//deploy
-			Deployment deploy = transition.deploy(envName, instance.getComment());
+			Deployment deploy = transition.deploy(envName, instance.getComponentIds(), instance.getComment());
 			Long deploymentId = deploy.getDeploymentId();
 			Long releaseId = deploy.getReleaseId();
 			transition.getDeploymentStatus(envName, deploymentId);
