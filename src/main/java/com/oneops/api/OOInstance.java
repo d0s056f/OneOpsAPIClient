@@ -2,6 +2,8 @@ package com.oneops.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class OOInstance {
 
@@ -15,6 +17,7 @@ public class OOInstance {
 	private String component;
 	private String comment;
 	private String[] componentIds;
+	private List<Long> excludedPlatforms;
 	private boolean gzipEnabled = true;
 	
 	public String getName() {
@@ -69,6 +72,8 @@ public class OOInstance {
 	}
 	public String[] getComponentIds() { return componentIds; }
 	public void setComponentIds(String[] componentIds) { this.componentIds = componentIds; }
+	public List<Long> getExcludedPlatforms() { return excludedPlatforms; }
+	public void setExcludedPlatforms(List<Long> excludedPlatforms) { this.excludedPlatforms = excludedPlatforms; }
 	public boolean isGzipEnabled() {
 		return gzipEnabled;
 	}

@@ -253,7 +253,7 @@ public class Transition extends APIClient {
 	 * @return
 	 * @throws OneOpsClientAPIException
 	 */
-	public Deployment deploy(String environmentName, String[] includeComponents, String comments) throws OneOpsClientAPIException {
+	public Deployment deploy(String environmentName, List<Long> excludePlatforms, String[] includeComponents, String comments) throws OneOpsClientAPIException {
 		
 		RequestSpecification request = createRequest();
 		
@@ -271,16 +271,27 @@ public class Transition extends APIClient {
 			ro.setProperties(properties);
 			JSONObject jsonObject = JsonUtil.createJsonObject(ro, "cms_deployment");
 
-			 StringBuilder sb = new StringBuilder();
-			 if(includeComponents != null && includeComponents.length > 0) {
-				 for (int i = 0; i < includeComponents.length; i++) {
-					 sb.append(includeComponents[i]);
-					 if(i < (includeComponents.length - 1)){
-						 sb.append(",");
+			 StringBuilder sbp = new StringBuilder();
+			 if(excludePlatforms!= null && excludePlatforms.size() > 0) {
+				 for (int i = 0; i < excludePlatforms.size(); i++) {
+					 sbp.append(excludePlatforms.get(i));
+					 if (i < (excludePlatforms.size() - 1)) {
+						 sbp.append(",");
 					 }
 				 }
 			 }
-			jsonObject.put("componentIds", sb.toString());
+			 jsonObject.put("exclude_platforms", sbp.toString());
+
+			 StringBuilder sbc = new StringBuilder();
+			 if(excludePlatforms!= null && includeComponents != null && includeComponents.length > 0) {
+				 for (int i = 0; i < includeComponents.length; i++) {
+					 sbc.append(includeComponents[i]);
+					 if(i < (includeComponents.length - 1)){
+						 sbc.append(",");
+					 }
+				 }
+			 }
+			 jsonObject.put("componentIds", sbc.toString());
 
 			Response response = request.body(jsonObject.toString()).post(transitionEnvUri + environmentName + "/deployments/");
 			if(response == null) {
