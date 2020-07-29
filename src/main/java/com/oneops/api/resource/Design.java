@@ -203,9 +203,8 @@ public class Design extends APIClient {
 	}
 	
 	/**
-	 * Fetches latest release for the given assembly/environment
-	 * 
-	 * @param environmentName
+	 * Fetches latest release
+	 *
 	 * @return
 	 * @throws OneOpsClientAPIException
 	 */
@@ -223,6 +222,7 @@ public class Design extends APIClient {
 		String msg = String.format("Failed to get latest releases due to null response");
 		throw new OneOpsClientAPIException(msg);
 	}
+
 	/**
 	 * Commits specific platform with open release
 	 * 
