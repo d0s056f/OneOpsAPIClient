@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -254,23 +255,84 @@ public class Transition extends APIClient {
 	 * @return
 	 * @throws OneOpsClientAPIException
 	 */
-	public Deployment deploy(String environmentName, String comments) throws OneOpsClientAPIException {
-		
+//	public Deployment deploy(String environmentName, String comments) throws OneOpsClientAPIException {
+//
+//		RequestSpecification request = createRequest();
+//
+//		 Release bomRelease = getBomRelease(environmentName);
+//		 Long releaseId = bomRelease.getReleaseId();
+//		 String nsPath = bomRelease.getNsPath();
+//		 if(releaseId != null && nsPath!= null) {
+//			Map<String ,String> properties= new HashMap<String ,String>();
+//			properties.put("nsPath", nsPath);
+//			properties.put("releaseId", releaseId + "");
+//			if(comments != null) {
+//				properties.put("comments", comments);
+//			}
+//			ResourceObject ro = new ResourceObject();
+//			ro.setProperties(properties);
+//			JSONObject jsonObject = JsonUtil.createJsonObject(ro , "cms_deployment");
+//			Response response = request.body(jsonObject.toString()).post(transitionEnvUri + environmentName + "/deployments/");
+//			if(response == null) {
+//				String msg = String.format("Failed to start deployment for environment %s due to null response" , environmentName);
+//				throw new OneOpsClientAPIException(msg);
+//			}
+//			if(response.getStatusCode() == 200 || response.getStatusCode() == 302) {
+//				return response.getBody().as(Deployment.class);
+//			} else {
+//				String msg = String.format("Failed to start deployment for environment %s. %s" , environmentName, getErrorMessageFromResponse(response));
+//				throw new OneOpsClientAPIException(msg);
+//			}
+//		} else {
+//			String msg = String.format("Failed to find release id to be deployed for environment %s", environmentName);
+//			throw new OneOpsClientAPIException(msg);
+//		}
+//	}
+
+	/**
+	 * Deploy an already generated deployment plan
+	 *
+	 * @param environmentName
+	 * @return
+	 * @throws OneOpsClientAPIException
+	 */
+	public Deployment deploy(String environmentName, List<Long> excludePlatforms, String[] components, String comments) throws OneOpsClientAPIException {
+
 		RequestSpecification request = createRequest();
-		
-		 Release bomRelease = getBomRelease(environmentName);
-		 Long releaseId = bomRelease.getReleaseId();
-		 String nsPath = bomRelease.getNsPath();
-		 if(releaseId != null && nsPath!= null) {
+
+		Release bomRelease = getBomRelease(environmentName);
+		Long releaseId = bomRelease.getReleaseId();
+		String nsPath = bomRelease.getNsPath();
+//		CiResource platform = getPlatform(environmentName, platformName);
+//		CiResource component = getPlatformComponent(environmentName, platformName, components[0]);
+		if(releaseId != null && nsPath!= null) {
 			Map<String ,String> properties= new HashMap<String ,String>();
 			properties.put("nsPath", nsPath);
 			properties.put("releaseId", releaseId + "");
 			if(comments != null) {
 				properties.put("comments", comments);
 			}
+			if(excludePlatforms != null && components != null) {
+				StringBuilder sb_component = new StringBuilder();
+				for (int i = 0; i < components.length; i++) {
+					sb_component.append(components[i]);
+					if (i < (components.length - 1)) {
+						sb_component.append(",");
+					}
+					properties.put("componentIds[]", sb_component.toString());
+				}
+				StringBuilder sb_platform = new StringBuilder();
+				for (int i = 0; i < excludePlatforms.size(); i++) {
+					sb_platform.append(excludePlatforms.get(i));
+					if (i < (excludePlatforms.size() - 1)) {
+						sb_platform.append(",");
+					}
+					properties.put("exclude_platforms", sb_platform.toString());
+				}
+			}
 			ResourceObject ro = new ResourceObject();
 			ro.setProperties(properties);
-			JSONObject jsonObject = JsonUtil.createJsonObject(ro , "cms_deployment");
+			JSONObject jsonObject = JsonUtil.createJsonObject(ro, "cms_deployment");
 			Response response = request.body(jsonObject.toString()).post(transitionEnvUri + environmentName + "/deployments/");
 			if(response == null) {
 				String msg = String.format("Failed to start deployment for environment %s due to null response" , environmentName);
@@ -297,36 +359,70 @@ public class Transition extends APIClient {
 	 * @return
 	 * @throws OneOpsClientAPIException
 	 */
-	public Deployment deployComponent(String environmentName, String platformName, String componentName) throws OneOpsClientAPIException {
+//	public Deployment deployComponent(String environmentName, String platformName, String componentName) throws OneOpsClientAPIException {
+//
+//		RequestSpecification request = createRequest();
+//
+//		CiResource platform = getPlatform(environmentName, platformName);
+//		CiResource component = getPlatformComponent(environmentName, platformName, componentName);
+//
+//		if(platform != null && component != null) {
+//			Long platformId = platform.getCiId();
+//			Long componentId = component.getCiId();
+//
+//			JSONObject comp = new JSONObject();
+//			comp.put("componentIds[]", componentId);
+//			Response response = request.body(comp.toString()).get(transitionEnvUri + environmentName + IConstants.PLATFORM_URI + platformId + "/deployments/bom");
+//			if(response == null) {
+//				String msg = String.format("Failed to start deployment for environment %s due to null response" , environmentName);
+//				throw new OneOpsClientAPIException(msg);
+//			}
+//			if(response.getStatusCode() == 200 || response.getStatusCode() == 302) {
+//				LOG.warn("Careful what you wish for son!");
+//				return response.getBody().as(Deployment.class);
+//			} else {
+//				String msg = String.format("Failed to start deployment for environment %s. %s" , environmentName, getErrorMessageFromResponse(response));
+//				throw new OneOpsClientAPIException(msg);
+//			}
+//		} else {
+//			String msg = String.format("Failed to find platform/component id to be deployed for environment %s", environmentName);
+//			throw new OneOpsClientAPIException(msg);
+//		}
+//	}
 
-		RequestSpecification request = createRequest();
 
-		CiResource platform = getPlatform(environmentName, platformName);
-		CiResource component = getPlatformComponent(environmentName, platformName, componentName);
-
-		if(platform != null && component != null) {
-			Long platformId = platform.getCiId();
-			Long componentId = component.getCiId();
-
-			JSONObject comp = new JSONObject();
-			comp.put("componentIds", componentId);
-			Response response = request.body(comp.toString()).get(transitionEnvUri + environmentName + IConstants.PLATFORM_URI + platformId + "/deployments/bom");
-			if(response == null) {
-				String msg = String.format("Failed to start deployment for environment %s due to null response" , environmentName);
-				throw new OneOpsClientAPIException(msg);
-			}
-			if(response.getStatusCode() == 200 || response.getStatusCode() == 302) {
-				LOG.warn("Careful what you wish for son!");
-				return response.getBody().as(Deployment.class);
-			} else {
-				String msg = String.format("Failed to start deployment for environment %s. %s" , environmentName, getErrorMessageFromResponse(response));
-				throw new OneOpsClientAPIException(msg);
-			}
-		} else {
-			String msg = String.format("Failed to find platform/component id to be deployed for environment %s", environmentName);
-			throw new OneOpsClientAPIException(msg);
-		}
-	}
+//	public Deployment deployComponent(String environmentName, List<Long> excludePlatforms, String[] componentIds, String comments) throws OneOpsClientAPIException {
+//
+//		RequestSpecification request = createRequest();
+//
+//		List<String> includePlatforms =
+//
+////		CiResource platform = getPlatform(environmentName, excludePlatforms);
+//		CiResource component = getPlatformComponent(environmentName, includePlatforms.get(0), componentIds[0]);
+//
+//		if(component != null) {
+////			Long platformId = platform.getCiId();
+//			Long componentId = component.getCiId();
+//
+//			JSONObject comp = new JSONObject();
+//			comp.put("componentIds[]", componentIds);
+//			Response response = request.body(comp.toString()).post(transitionEnvUri + environmentName + "/deployments");
+//			if(response == null) {
+//				String msg = String.format("Failed to start deployment for environment %s due to null response" , environmentName);
+//				throw new OneOpsClientAPIException(msg);
+//			}
+//			if(response.getStatusCode() == 200 || response.getStatusCode() == 302) {
+//				LOG.warn("Careful what you wish for son!");
+//				return response.getBody().as(Deployment.class);
+//			} else {
+//				String msg = String.format("Failed to start deployment for environment %s. %s" , environmentName, getErrorMessageFromResponse(response));
+//				throw new OneOpsClientAPIException(msg);
+//			}
+//		} else {
+//			String msg = String.format("Failed to find platform/component id to be deployed for environment %s", environmentName);
+//			throw new OneOpsClientAPIException(msg);
+//		}
+//	}
 
 
 	/**
